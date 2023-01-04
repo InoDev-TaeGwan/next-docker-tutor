@@ -3,11 +3,20 @@ FROM node:16-alpine AS deps
 
 WORKDIR /usr/src/app
 
+#COPY . .
 
-COPY . .
+
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
 
 # Install dependencies in /app
-RUN npm install
+# RUN npm install
 
 # Ensure port 3000 is accessible to our system
 EXPOSE 3000
